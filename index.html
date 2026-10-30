@@ -103,10 +103,6 @@
     border: 2.5px solid #0d9488; background: #effef9;
     box-shadow: 0 0 0 4px rgba(13,148,136,.10), 0 2px 6px rgba(13,148,136,.16);
   }
-  .node.plat { border: 1.5px dashed #c9a227; background: #fdfaee; }
-  .node.plat b { color: #8a6d0b; font-size: 12px; }
-  .node.company { border: 1.5px dashed #2ea36b; background: #eefaf3; }
-  .node.company b { color: #1e7e46; font-size: 12px; }
 
   .note { max-width: 1080px; margin: 0 auto; padding: 6px 20px 30px; font-size: 12.5px; color: #6b7a8d; line-height: 1.95; }
   .note b { color: #3a4a5f; }
@@ -134,8 +130,6 @@
   <span><i style="background:#fdf1e6;border:1.5px solid #e07b2e"></i>人工智能学院（2024 新设）</span>
   <span><i style="background:#e7f8f8;border:1.5px solid #1a9e9e"></i>校级 AI 机构</span>
   <span><i style="background:#f0f3f7;border:1.5px solid #8a97a8"></i>其他相关院系</span>
-  <span><i style="background:#fdfaee;border:1.5px dashed #c9a227"></i>政府批建重点实验室/平台</span>
-  <span><i style="background:#eefaf3;border:1.5px dashed #2ea36b"></i>产业孵化/共建企业</span>
   <span><i style="background:#fff7e0;border:1px solid #ecd98a"></i>■ 黄色成员＝课题组长/牵头人</span>
   <span><i style="background:#f3ecfd;border:1px solid #d9c8f5"></i>■ 紫色成员＝双挂/编制在软件所</span>
   <span><i style="background:#f0f3f7;border:1px solid #dde3ea"></i>■ 斜体成员＝校内兼职</span>
@@ -254,10 +248,10 @@
           <li>
             <div class="node inst"><b>计算机软件研究所</b><small>在职 16 人 ＋ 官网团队页补充 · 所长：李国良</small></div>
             <ul>
-              <li><div class="node wide"><b>KEG 知识工程实验室</b><small>知识图谱 / GLM 大模型 / AMiner<small>（编制所在所，双挂智能所体系）</small></small>
+              <li><div class="node wide hot"><b>KEG 知识工程实验室</b><small>知识图谱 / GLM 大模型 / AMiner<small>（编制所在所，双挂智能所体系）</small></small>
                 <div class="mem"><span class="lead">唐杰</span><span class="lead">李涓子</span><span class="dual">许斌</span><span class="dual">周强</span><span class="dual">侯磊</span><span class="dual">东昱晓（GLM 核心）</span><span class="dual">徐斌*</span><span class="dual">董雨潇*</span></div>
                 <div class="chips"><span class="chip">牵头：基础模型北京市重点实验室</span><span class="chip co">孵化 → 智谱AI</span></div></div></li>
-              <li><div class="node wide"><b>数据库组（DATA）</b><small>AI4DB / NL2SQL</small>
+              <li><div class="node wide hot"><b>数据库组（DATA）</b><small>AI4DB / NL2SQL</small>
                 <div class="mem"><span class="lead">李国良</span><span>冯建华</span><span>王健楠</span><span>王建勇</span><span class="dual">樊文飞*</span><span class="dual">张宇翔*</span><span class="dual">王晨*</span><span class="dual">索婧姝*</span></div>
                 <div class="chips"><span class="chip">牵头：数据智能北京市重点实验室</span></div></div></li>
               <li><div class="node wide"><b>EDA 组</b><small>集成电路物理设计 / EDA</small>
@@ -269,15 +263,7 @@
             </ul>
           </li>
 
-          <!-- ============ 平台 + 孵化 ============ -->
-          <li>
-            <div class="node plat"><b>政府批建平台（系内牵头）</b>
-              <small>互联网体系结构全国重点实验室 · 普适计算（教育部）· 媒体与网络（教育部-微软）· 基础模型 / 端侧智能 / 数据智能（北京市）· 可视媒体工程中心 · 国家AI产教融合平台</small></div>
-          </li>
-          <li>
-            <div class="node company"><b>产业孵化 / 共建</b>
-              <small>智谱AI ← KEG · 面壁智能 ← THUNLP · 瑞莱智慧 ← TSAIL · 聆心智能 ← CoAI · 趋境科技（端侧智能共建）</small></div>
-          </li>
+          <!-- ============ 平台与孵化关系见各实验室卡片 chip ============ -->
         </ul>
       </li>
 
@@ -291,9 +277,9 @@
               <div class="mem"><span class="lead">姚期智</span><span class="lead">段路明</span><span>马雄峰</span><span>孙麓岩</span><span>邓东灵</span><span>徐勇</span><span>侯攀宇</span><span>濮云飞</span><span>吴宇恺</span></div>
               <div class="chips"><span class="chip">研究系列 10 人（非教师序列）</span></div></div>
             <ul>
-              <li><div class="node wide hot"><b>马雄峰课题组</b><small>量子信息科学</small>
+              <li><div class="node wide"><b>马雄峰课题组</b><small>量子信息科学</small>
                 <div class="mem"><span class="lead">马雄峰</span></div></div></li>
-              <li><div class="node wide hot"><b>侯攀宇课题组</b><small>离子量子计算 / 金刚石色心</small>
+              <li><div class="node wide"><b>侯攀宇课题组</b><small>离子量子计算 / 金刚石色心</small>
                 <div class="mem"><span class="lead">侯攀宇</span></div></div></li>
             </ul>
           </li>
@@ -378,7 +364,7 @@
   <b>⑥ 其他院系/校级机构</b>（软件学院、电子系、自动化系、网研院、深研院、AI研究院、AIR、信息国家研究中心）保持概览级，未逐人展开；人工智能学院为架构级（2024 新设，师资多与上述院系双聘，学院官网 collegeai.tsinghua.edu.cn）。<br>
   <b>⑦ SAIL = TSAIL：</b>朱军组的官方英文名即 "Tsinghua SAIL Group (Statistical Artificial Intelligence &amp; Learning)"（官网 ml.cs.tsinghua.edu.cn），不是独立于 TSAIL 的另一个组。<br>
   <b>⑧ 建制澄清：</b>清华大学没有"计算机学院"建制——计算机方向主体为计算机科学与技术系；软件学院、网络研究院、电子工程系、自动化系等为平行院系（同属信息大类）。<br>
-  <b>⑨ 2026-10 筛查修订：</b>按"只保留科研/技术组织"原则，移除计算机基础与实验教学部（16 人教学单位）、叉院教学品牌卡（姚班/智班/量信班）与叉院兼职客座卡（储枫/胡事民/郁昱/楼天城，系兼职身份而非组织，兼职信息见第⑤条口径）；政府批建平台与产业孵化卡保留（技术实体与孵化关系）。<br>
+  <b>⑨ 2026-10 筛查修订：</b>按"只保留实验室/课题组实体"原则，移除计算机基础与实验教学部（教学单位）、叉院教学品牌卡（姚班/智班/量信班）、叉院兼职客座卡（储枫/胡事民/郁昱/楼天城，系兼职身份而非组织，兼职信息见第⑤条口径），以及"政府批建平台"与"产业孵化/共建"两张汇总卡（均非实验室实体；平台与孵化关系以各实验室卡片上的标签保留）。青色高亮＝重点课题组（产业孵化源头与大模型强相关方向）。<br>
   <b>⑩ 本次修订的事实来源：</b>人工智能学院（2024-04-27 成立、院长姚期智、学术委员会 6 院士、学科布局）据清华新闻网与学院官网；副院长朱军据公开资料，暂未见官方任命通稿；汪玉（电子系主任）、刘云浩（软件学院院长）、王建民（大数据系统软件国家工程研究中心执行主任）、黄高（自动化系长聘副教授、DenseNet 一作）、信息国家研究中心（2017-11 批准组建、现任主任戴琼海）均经 2026-10 检索核实。
 </div>
 
