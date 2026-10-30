@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>清华大学 AI / 计算机实验室全量挂靠关系图（2026-10）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: #f4f6fa; color: #2c3e50; overflow-x: auto;
+  }
+  header { text-align: center; padding: 22px 16px 8px; }
+  header h1 { font-size: 22px; margin-bottom: 6px; }
+  header p { font-size: 13px; color: #7f8c9b; }
+  .toolbar {
+    position: sticky; top: 0; z-index: 99;
+    background: rgba(255,255,255,.92); backdrop-filter: blur(4px);
+    border-bottom: 1px solid #e3e8f0; padding: 8px 16px;
+    display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap;
+  }
+  .toolbar button {
+    border: 1px solid #c9d4e3; background: #fff; border-radius: 6px;
+    padding: 4px 12px; font-size: 13px; cursor: pointer;
+  }
+  .toolbar button:hover { background: #eef3fb; }
+  .legend {
+    display: flex; gap: 14px; font-size: 12px; color: #5a6b7f; flex-wrap: wrap;
+    justify-content: center; padding: 10px 16px 0;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+  #viewport { padding: 10px 0 40px; }
+  #canvas { display: inline-block; min-width: 100%; }
+
+  /* ===== 组织架构树 ===== */
+  .tree ul { display: flex; justify-content: center; padding-top: 24px; position: relative; list-style: none; }
+  .tree li { display: flex; flex-direction: column; align-items: center; padding: 24px 5px 0; position: relative; }
+  .tree li::before, .tree li::after {
+    content: ''; position: absolute; top: 0; right: 50%;
+    border-top: 2px solid #b9c6d8; width: 50%; height: 24px;
+  }
+  .tree li::after { right: auto; left: 50%; border-left: 2px solid #b9c6d8; }
+  .tree li:only-child::after, .tree li:only-child::before { display: none; }
+  .tree li:only-child { padding-top: 0; }
+  .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+  .tree li:last-child::before { border-right: 2px solid #b9c6d8; border-radius: 0 8px 0 0; }
+  .tree li:first-child::after { border-radius: 8px 0 0 0; }
+  .tree ul ul::before {
+    content: ''; position: absolute; top: 0; left: 50%;
+    border-left: 2px solid #b9c6d8; width: 0; height: 24px;
+  }
+  .tree > ul { padding-top: 0; }
+  .tree > ul > li { padding-top: 16px; }
+  .tree > ul > li::before, .tree > ul > li::after { height: 16px; }
+
+  /* ===== 节点卡片 ===== */
+  .node {
+    background: #fff; border: 1.5px solid #cfd9e6; border-radius: 10px;
+    padding: 9px 14px; min-width: 150px; max-width: 260px;
+    text-align: center; box-shadow: 0 1px 4px rgba(30,50,90,.07); position: relative;
+  }
+  .node b { font-size: 13.5px; display: block; line-height: 1.35; }
+  .node small { font-size: 11px; color: #7d8b9d; display: block; margin-top: 3px; line-height: 1.5; }
+  .chips { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; }
+  .chip {
+    font-size: 10px; padding: 1px 6px; border-radius: 8px;
+    background: #eef3fb; color: #3a5f9e; border: 1px solid #d5e0f2; white-space: nowrap;
+  }
+  .chip.co { background: #eafaf0; color: #1e7e46; border-color: #bfe8cf; }
+  .chip.wn { background: #fdf2f2; color: #b03535; border-color: #f0cdcd; }
+
+  /* 成员名单（全量） */
+  .mem {
+    margin-top: 6px; text-align: left; display: flex; flex-wrap: wrap; gap: 3px;
+    justify-content: flex-start; border-top: 1px dashed #e4e9f0; padding-top: 6px;
+  }
+  .mem span {
+    font-size: 10.5px; padding: 1px 6px; border-radius: 7px;
+    background: #f5f7fa; color: #4a5a6d; border: 1px solid #e4e9f0; white-space: nowrap;
+  }
+  .mem span.lead { background: #fff7e0; color: #8a6d0b; border-color: #ecd98a; font-weight: 600; }
+  .mem span.dual { background: #f3ecfd; color: #5a34ad; border-color: #d9c8f5; }
+  .mem span.adj  { background: #f0f3f7; color: #8a97a8; border-color: #dde3ea; font-style: italic; }
+
+  .node.root { background: #2b3a55; color: #fff; border-color: #2b3a55; padding: 12px 26px; }
+  .node.root small { color: #b9c6dd; }
+  .node.cs   { border-color: #2f6fd6; background: #eaf1fd; }
+  .node.cs b { color: #1d4fa8; }
+  .node.iiis { border-color: #7a4fd6; background: #f3ecfd; }
+  .node.iiis b { color: #5a34ad; }
+  .node.ai   { border-color: #e07b2e; background: #fdf1e6; }
+  .node.ai b { color: #b3591a; }
+  .node.uni  { border-color: #1a9e9e; background: #e7f8f8; }
+  .node.uni b { color: #0f7c7c; }
+  .node.oth  { border-color: #8a97a8; background: #f0f3f7; }
+  .node.oth b { color: #55637a; }
+  .node.inst { background: #fff; min-width: 150px; }
+  .node.inst b { font-size: 12.5px; }
+  .node.wide { max-width: 400px; }
+  .node.hot {
+    border: 2.5px solid #0d9488; background: #effef9;
+    box-shadow: 0 0 0 4px rgba(13,148,136,.10), 0 2px 6px rgba(13,148,136,.16);
+  }
+  .node.plat { border: 1.5px dashed #c9a227; background: #fdfaee; }
+  .node.plat b { color: #8a6d0b; font-size: 12px; }
+  .node.company { border: 1.5px dashed #2ea36b; background: #eefaf3; }
+  .node.company b { color: #1e7e46; font-size: 12px; }
+
+  .note { max-width: 1080px; margin: 0 auto; padding: 6px 20px 30px; font-size: 12.5px; color: #6b7a8d; line-height: 1.95; }
+  .note b { color: #3a4a5f; }
+  .note h3 { font-size: 14px; color: #2c3e50; margin: 12px 0 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>清华大学 AI / 计算机实验室全量挂靠关系图</h1>
+  <p>覆盖：计算机系 135 人（官网名录 2024-02 版）＋ 叉院 33 人（官网 2026-10 采集）全量 · 人工智能学院 / 校级机构 / 相关院系为架构级 · 课题组仅列知名度高者，其余归入各所"其他教师"卡</p>
+</header>
+
+<div class="toolbar">
+  <button onclick="zoom(0.85)">缩小 −</button>
+  <button onclick="zoomFit()">适应窗口</button>
+  <button onclick="zoom(1.18)">放大 +</button>
+  <button onclick="zoomReset()">重置 100%</button>
+  <span id="pct" style="font-size:12px;color:#8a97a8;min-width:42px">100%</span>
+</div>
+
+<div class="legend">
+  <span><i style="background:#eaf1fd;border:1.5px solid #2f6fd6"></i>计算机系</span>
+  <span><i style="background:#f3ecfd;border:1.5px solid #7a4fd6"></i>交叉信息研究院（叉院）</span>
+  <span><i style="background:#fdf1e6;border:1.5px solid #e07b2e"></i>人工智能学院（2024 新设）</span>
+  <span><i style="background:#e7f8f8;border:1.5px solid #1a9e9e"></i>校级 AI 机构</span>
+  <span><i style="background:#f0f3f7;border:1.5px solid #8a97a8"></i>其他相关院系</span>
+  <span><i style="background:#fdfaee;border:1.5px dashed #c9a227"></i>政府批建重点实验室/平台</span>
+  <span><i style="background:#eefaf3;border:1.5px dashed #2ea36b"></i>产业孵化/共建企业</span>
+  <span><i style="background:#fff7e0;border:1px solid #ecd98a"></i>■ 黄色成员＝课题组长/牵头人</span>
+  <span><i style="background:#f3ecfd;border:1px solid #d9c8f5"></i>■ 紫色成员＝双挂/编制在软件所</span>
+  <span><i style="background:#f0f3f7;border:1px solid #dde3ea"></i>■ 斜体成员＝校内兼职</span>
+  <span><i style="background:#effef9;border:2.5px solid #0d9488"></i>■ 青色高亮＝重点课题组</span>
+</div>
+
+<div id="viewport">
+<div id="canvas">
+<div class="tree">
+<ul>
+  <li>
+    <div class="node root"><b>清华大学</b><small>计算机系 135 人 ＋ 叉院 33 人（全量）· AI学院 / 校级机构 / 相关院系为概览</small></div>
+    <ul>
+
+      <!-- ================= 计算机系 ================= -->
+      <li>
+        <div class="node cs"><b>计算机科学与技术系</b><small>5 个研究所 · 全系在职 135 人（另含 16 人教学单位，本图不展开）</small></div>
+        <ul>
+
+          <!-- ============ 智能技术与系统实验室 ============ -->
+          <li>
+            <div class="node inst"><b>智能技术与系统实验室</b><small>在职 26 人 · AI 主阵地（原国家重点实验室）</small></div>
+            <ul>
+              <li><div class="node wide hot"><b>THUIR 信息检索课题组</b><small>信息检索 / 个性化推荐</small>
+                <div class="mem"><span class="lead">刘奕群</span><span class="lead">马少平</span><span>张敏</span><span>艾清遥</span></div></div></li>
+              <li><div class="node wide hot"><b>THUNLP 自然语言处理</b><small>NLP / 大模型</small>
+                <div class="mem"><span class="lead">孙茂松</span><span class="lead">刘知远</span><span class="lead">刘洋</span></div>
+                <div class="chips"><span class="chip">牵头：端侧智能北京市重点实验室</span><span class="chip co">孵化 → 面壁智能</span></div></div></li>
+              <li><div class="node wide hot"><b>TSAIL / SAIL 机器学习</b><small>Statistical AI &amp; Learning · 生成模型</small>
+                <div class="mem"><span class="lead">张钹</span><span class="lead">朱军</span><span>胡晓林</span><span>陈键飞</span><span>李建民</span></div>
+                <div class="chips"><span class="chip co">孵化 → 瑞莱智慧 RealAI</span></div></div></li>
+              <li><div class="node wide hot"><b>CoAI 交互式人工智能</b><small>对话系统 / 语言生成</small>
+                <div class="mem"><span class="lead">黄民烈</span></div>
+                <div class="chips"><span class="chip co">孵化 → 聆心智能</span></div></div></li>
+              <li><div class="node wide"><b>量子软件研究中心</b><small>量子编程 / 量子软件理论</small>
+                <div class="mem"><span class="lead">应明生</span><span class="lead">季铮锋</span><span>冯元</span><span>陈建鑫</span></div></div></li>
+              <li><div class="node wide"><b>智能机器人与控制</b><small>机器人感知 / 无人系统</small>
+                <div class="mem"><span class="lead">孙富春</span><span>刘华平</span><span>邓志东</span><span>陈挺</span></div></div></li>
+              <li><div class="node wide"><b>其他教师（未分组）</b><small>方向见括号，[?]＝待核实</small>
+                <div class="mem"><span>苏航（视觉/AI安全 [?]）</span><span>王宏宁（机器学习 [?]）</span><span>徐华（智能系统 [?]）</span><span>周强（NLP [?]）</span><span>柏辰</span></div></div></li>
+            </ul>
+          </li>
+
+          <!-- ============ 人机交互与媒体集成研究所 ============ -->
+          <li>
+            <div class="node inst"><b>人机交互与媒体集成研究所</b><small>在职 22 人 · 图形/媒体/交互</small></div>
+            <ul>
+              <li><div class="node wide"><b>VMR 可视媒体研究中心</b><small>计算机视觉 / 图形学</small>
+                <div class="mem"><span class="lead">胡事民</span><span>刘永进</span><span>徐昆</span><span>张松海</span></div>
+                <div class="chips"><span class="chip">依托：可视媒体北京市工程研究中心</span></div></div></li>
+              <li><div class="node wide"><b>普适计算 / HCI 实验室</b><small>人机交互 / 普适计算</small>
+                <div class="mem"><span class="lead">史元春</span><span>喻纯</span><span>兴军亮</span><span>陶品</span><span>王运涛</span><span>石伟男</span></div>
+                <div class="chips"><span class="chip">主任：普适计算教育部重点实验室</span></div></div></li>
+              <li><div class="node wide"><b>多媒体计算</b><small>多媒体网络 / 流媒体 / VR</small>
+                <div class="mem"><span class="lead">朱文武</span><span class="lead">孙立峰</span></div></div></li>
+              <li><div class="node wide"><b>计算机视觉（人脸识别）</b><small>图像识别 / 网络视觉</small>
+                <div class="mem"><span class="lead">艾海舟</span></div></div></li>
+              <li><div class="node wide"><b>因果智能 / 推荐系统</b><small>因果推断 / 可解释性</small>
+                <div class="mem"><span class="lead">崔鹏</span></div></div></li>
+              <li><div class="node wide"><b>物联网与边缘计算</b><small>IoT / 边缘智能</small>
+                <div class="mem"><span class="lead">任炬</span></div></div></li>
+              <li><div class="node wide"><b>其他教师（未分组）</b>
+                <div class="mem"><span>周悦芝（系统支撑）</span><span>穆太江</span><span>王鑫</span><span>孟媛</span><span>徐群策</span><span>杨烁今</span></div></div></li>
+            </ul>
+          </li>
+
+          <!-- ============ 计算机网络技术研究所 ============ -->
+          <li>
+            <div class="node inst"><b>计算机网络技术研究所</b><small>在职 26 人（含 8 名校内兼职）</small></div>
+            <ul>
+              <li><div class="node wide"><b>互联网体系结构 / 路由</b><small>CERNET / IPv6 / 路由</small>
+                <div class="mem"><span class="lead">吴建平</span><span>徐恪</span><span>尹霞</span><span>刘斌</span></div>
+                <div class="chips"><span class="chip">依托：互联网体系结构全国重点实验室</span></div></div></li>
+              <li><div class="node wide"><b>数据中心网络</b><small>DCN / 云网络</small>
+                <div class="mem"><span class="lead">李丹</span></div></div></li>
+              <li><div class="node wide"><b>无线网络 / 网络 AI</b><small>无线 / 网络智能化</small>
+                <div class="mem"><span class="lead">崔勇</span></div></div></li>
+              <li><div class="node wide"><b>网络传输与体系结构</b><small>传输控制 / 拥塞控制</small>
+                <div class="mem"><span class="lead">徐明伟</span></div>
+                <div class="chips"><span class="chip wn">转任：网络研究院副院长</span></div></div></li>
+              <li><div class="node wide"><b>网络安全</b><small>网络安全 / 可信</small>
+                <div class="mem"><span class="lead">任丰原</span><span class="adj">段海新（兼）</span><span>赵有健</span></div></div></li>
+              <li><div class="node wide"><b>网络运维 AIOps</b><small>智能运维 / 故障诊断</small>
+                <div class="mem"><span class="lead">裴丹</span></div></div></li>
+              <li><div class="node wide"><b>网络管理与测量</b><small>测量 / 管理平台</small>
+                <div class="mem"><span class="adj">杨家海（兼）</span><span class="adj">王之梁（兼）</span><span class="adj">王继龙（兼）</span></div></div></li>
+              <li><div class="node wide"><b>密码理论与技术研究中心</b><small>密码分析 / 后量子密码</small>
+                <div class="mem"><span class="lead adj">王小云（兼·院士）</span></div></div></li>
+              <li><div class="node wide"><b>其他教师（未分组）</b>
+                <div class="mem"><span>刘卫东</span><span>张小平</span><span>樊海宁</span><span class="adj">李琦（兼）</span><span>宋佳兴</span><span class="adj">王会（兼）</span><span>向勇</span><span>杨芫</span><span>于红波</span><span class="adj">张超（兼）</span><span>谢晓晖</span></div></div></li>
+            </ul>
+          </li>
+
+          <!-- ============ 高性能计算研究所 ============ -->
+          <li>
+            <div class="node inst"><b>高性能计算研究所</b><small>在职 29 人 · 所长：翟季冬</small></div>
+            <ul>
+              <li><div class="node wide"><b>存储系统课题组</b><small>存储 / 非易失内存（MadFS 登顶 IO500）</small>
+                <div class="mem"><span class="lead">郑纬民（院士·学术带头）</span><span>舒继武</span><span>陆游游</span><span>张广艳</span><span>章明星</span></div></div></li>
+              <li><div class="node wide"><b>并行计算 / 编译 / 超算</b><small>并行编程 / 性能评测</small>
+                <div class="mem"><span class="lead">翟季冬</span><span>陈文光</span><span>杨广文</span><span>余宏亮</span><span>薛巍</span></div></div></li>
+              <li><div class="node wide"><b>分布式与大数据系统</b><small>云计算 / 虚拟化 / 大数据</small>
+                <div class="mem"><span class="lead">武永卫</span><span>鞠大鹏</span><span>姜进磊</span></div></div></li>
+              <li><div class="node wide"><b>并行算法与理论</b><small>并行算法 / 图计算理论</small>
+                <div class="mem"><span>陈婧</span><span>钱学海</span><span>渠鹏</span><span>李兆麟</span></div></div></li>
+              <li><div class="node wide"><b>类脑计算</b><small>天机芯片软件栈 / 编译</small>
+                <div class="mem"><span class="lead">张悠慧</span></div></div></li>
+              <li><div class="node wide"><b>计算机体系结构</b>
+                <div class="mem"><span class="lead">汪东升</span></div></div></li>
+              <li><div class="node wide"><b>其他教师 / 工程师</b>
+                <div class="mem"><span>黄震春</span><span>赵颖</span><span>韩旭</span><span>金煜阳</span><span>赵文来</span><span>闪英迪</span><span>王豪杰</span><span>陈宁（工程师）</span><span>林皎（工程师）</span><span>张武生（工程师）</span></div></div></li>
+            </ul>
+          </li>
+
+          <!-- ============ 计算机软件研究所 ============ -->
+          <li>
+            <div class="node inst"><b>计算机软件研究所</b><small>在职 16 人 ＋ 官网团队页补充 · 所长：李国良</small></div>
+            <ul>
+              <li><div class="node wide"><b>KEG 知识工程实验室</b><small>知识图谱 / GLM 大模型 / AMiner<small>（编制所在所，双挂智能所体系）</small></small>
+                <div class="mem"><span class="lead">唐杰</span><span class="lead">李涓子</span><span class="dual">许斌</span><span class="dual">周强</span><span class="dual">侯磊</span><span class="dual">东昱晓（GLM 核心）</span><span class="dual">徐斌*</span><span class="dual">董雨潇*</span></div>
+                <div class="chips"><span class="chip">牵头：基础模型北京市重点实验室</span><span class="chip co">孵化 → 智谱AI</span></div></div></li>
+              <li><div class="node wide"><b>数据库组（DATA）</b><small>AI4DB / NL2SQL</small>
+                <div class="mem"><span class="lead">李国良</span><span>冯建华</span><span>王健楠</span><span>王建勇</span><span class="dual">樊文飞*</span><span class="dual">张宇翔*</span><span class="dual">王晨*</span><span class="dual">索婧姝*</span></div>
+                <div class="chips"><span class="chip">牵头：数据智能北京市重点实验室</span></div></div></li>
+              <li><div class="node wide"><b>EDA 组</b><small>集成电路物理设计 / EDA</small>
+                <div class="mem"><span class="lead">蔡懿慈*</span><span>吴为民*</span><span>喻文健</span></div></div></li>
+              <li><div class="node wide"><b>系统软件 / 操作系统</b><small>OS / 编译 / 软件安全</small>
+                <div class="mem"><span class="lead">陈渝</span><span>杨刚*</span></div></div></li>
+              <li><div class="node wide"><b>其他教师（未分组）</b>
+                <div class="mem"><span>冯铃</span><span>戴桂兰</span><span>潘捷</span><span>孙佶</span></div></div></li>
+            </ul>
+          </li>
+
+          <!-- ============ 平台 + 孵化 ============ -->
+          <li>
+            <div class="node plat"><b>政府批建平台（系内牵头）</b>
+              <small>互联网体系结构全国重点实验室 · 普适计算（教育部）· 媒体与网络（教育部-微软）· 基础模型 / 端侧智能 / 数据智能（北京市）· 可视媒体工程中心 · 国家AI产教融合平台</small></div>
+          </li>
+          <li>
+            <div class="node company"><b>产业孵化 / 共建</b>
+              <small>智谱AI ← KEG · 面壁智能 ← THUNLP · 瑞莱智慧 ← TSAIL · 聆心智能 ← CoAI · 趋境科技（端侧智能共建）</small></div>
+          </li>
+        </ul>
+      </li>
+
+      <!-- ================= 叉院 ================= -->
+      <li>
+        <div class="node iiis"><b>交叉信息研究院（叉院）</b><small>姚期智创办并领导 · 全职教师 33 人 · 2005</small>
+          <div class="chips"><span class="chip">⚠ 与计算机系平行，不隶属</span></div></div>
+        <ul>
+          <li>
+            <div class="node wide"><b>量子信息中心（CQI）</b><small>师资 9 人 · 量子计算 / 量子网络</small>
+              <div class="mem"><span class="lead">姚期智</span><span class="lead">段路明</span><span>马雄峰</span><span>孙麓岩</span><span>邓东灵</span><span>徐勇</span><span>侯攀宇</span><span>濮云飞</span><span>吴宇恺</span></div>
+              <div class="chips"><span class="chip">研究系列 10 人（非教师序列）</span></div></div>
+            <ul>
+              <li><div class="node wide hot"><b>马雄峰课题组</b><small>量子信息科学</small>
+                <div class="mem"><span class="lead">马雄峰</span></div></div></li>
+              <li><div class="node wide hot"><b>侯攀宇课题组</b><small>离子量子计算 / 金刚石色心</small>
+                <div class="mem"><span class="lead">侯攀宇</span></div></div></li>
+            </ul>
+          </li>
+          <li>
+            <div class="node wide"><b>人工智能基础研究中心</b><small>教师 24 人（官网未细分中心，按方向聚簇）</small></div>
+            <ul>
+              <li><div class="node wide hot"><b>李建课题组（ADL）</b><small>理论计算 / 机器学习理论 / 金融科技</small>
+                <div class="mem"><span class="lead">李建</span></div></div></li>
+              <li><div class="node wide hot"><b>陈一镭课题组</b><small>密码学</small>
+                <div class="mem"><span class="lead">陈一镭</span></div></div></li>
+              <li><div class="node wide hot"><b>黄隆波 DI Lab</b><small>决策智能 / 强化学习 / 大模型</small>
+                <div class="mem"><span class="lead">黄隆波</span></div></div></li>
+              <li><div class="node wide hot"><b>袁洋课题组</b><small>AI 基础理论 / 应用范畴论</small>
+                <div class="mem"><span class="lead">袁洋</span></div></div></li>
+              <li><div class="node wide hot"><b>结构智能组</b><small>AI 基础理论 · 姚期智/袁洋共同负责</small>
+                <div class="mem"><span class="lead">姚期智</span><span class="lead">袁洋</span></div></div></li>
+              <li><div class="node wide hot"><b>吕凯风课题组</b><small>机器学习理论 / AI 安全与对齐</small>
+                <div class="mem"><span class="lead">吕凯风</span></div></div></li>
+              <li><div class="node wide hot"><b>赵行 MARS Lab</b><small>自动驾驶 / 多模态 / 机器人学习</small>
+                <div class="mem"><span class="lead">赵行</span></div></div></li>
+              <li><div class="node wide hot"><b>徐葳课题组</b><small>分布式系统 / 金融科技 / AI安全</small>
+                <div class="mem"><span class="lead">徐葳（副院长）</span></div></div></li>
+              <li><div class="node wide hot"><b>张焕晨组 Embryo Labs</b><small>数据库系统 / 索引结构</small>
+                <div class="mem"><span class="lead">张焕晨</span></div></div></li>
+              <li><div class="node wide"><b>其他教师</b><small>研究方向见括号</small>
+                <div class="mem"><span>段然（图论算法）</span><span>陈彬毅（密码/零知识）</span><span>宋一凡（理论密码）</span><span>陈建宇（机器人/自动驾驶）</span><span>高阳（视觉/RL）</span><span>许华哲（具身智能）</span><span>徐梦迪（ML/机器人）</span><span>弋力（三维视觉）</span><span>杜韬（图形学）</span><span>张景昭（优化/ML理论）</span><span>王禹皓（因果推断）</span><span>贺天行（多模态/AI安全）</span><span>房智轩（博弈/区块链）</span><span>郑舒冉（计算经济学）</span><span>高鸣宇（体系结构）</span><span>马恺声（AI芯片）</span></div></div></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+
+      <!-- ================= 人工智能学院 ================= -->
+      <li>
+        <div class="node ai"><b>人工智能学院</b><small>2024-04-27 成立 · 院长：姚期智 · 副院长：朱军（据公开资料）</small>
+          <div class="chips"><span class="chip">师资与计算机系 / 叉院 / 自动化系 / AIR 互聘双聘</span></div></div>
+        <ul>
+          <li><div class="node inst"><b>学术委员会（6 院士）</b><small>姚期智 · 张钹 · 戴琼海 · 张亚勤 · 胡事民 · 段路明</small></div></li>
+          <li><div class="node inst"><b>学科布局</b><small>AI 核心理论与架构 ＋ "AI+X"：核心理论 / 高效算法 / 具身智能 / 多模态感知 / 底层架构平台 / 科学智能</small></div></li>
+        </ul>
+      </li>
+
+      <!-- ================= 校级机构 ================= -->
+      <li>
+        <div class="node uni"><b>校级 AI / 信息科研机构</b><small>不隶属任何单个院系</small></div>
+        <ul>
+          <li><div class="node inst"><b>人工智能研究院</b><small>2018 成立 · 张钹院士（名誉院长）</small>
+            <div class="chips"><span class="chip">下设：基础模型研究中心（2023-07）</span><span class="chip co">孵化 → 瑞莱智慧（共建）</span></div></div></li>
+          <li><div class="node inst"><b>智能产业研究院 AIR</b><small>张亚勤 · 李航（首席科学家）</small>
+            <div class="chips"><span class="chip">刘洋兼任副院长</span></div></div></li>
+          <li><div class="node inst"><b>北京信息科学与技术国家研究中心</b><small>2017-11 科技部批准组建 · 前身：清华信息国家实验室（筹）· 现任主任：戴琼海院士</small></div></li>
+        </ul>
+      </li>
+
+      <!-- ================= 其他院系 ================= -->
+      <li>
+        <div class="node oth"><b>其他相关院系</b><small>常被误认为计算机系 · 概览级</small></div>
+        <ul>
+          <li><div class="node inst"><b>软件学院</b><small>刘云浩（院长 · AIoT/群智感知 · ACM/IEEE Fellow）· 王建民（大数据系统软件国家工程研究中心执行主任 · IoTDB）· 刘世霞（可解释AI/可视化）</small>
+            <div class="chips"><span class="chip">依托：大数据系统软件国家工程研究中心</span></div></div></li>
+          <li><div class="node inst"><b>电子工程系</b><small>汪玉（系主任 · 智能芯片/高效AI · IEEE Fellow）· 欧智坚（语音 SAT 实验室）</small>
+            <div class="chips"><span class="chip">汪玉：异质互联可持续智能算力芯片与系统北京市重点实验室主任</span></div></div></li>
+          <li><div class="node inst"><b>自动化系</b><small>戴琼海（院士）· 张长水 / 耿华（ML/CV）· 黄高（深度学习 · DenseNet 一作 · 科学探索奖）</small></div></li>
+          <li><div class="node inst"><b>网络研究院</b><small>吴建平（院士）· 段海新（安全）· 徐明伟（副院长）· 张超（系统安全）</small></div></li>
+          <li><div class="node inst"><b>深圳国际研究生院</b><small>信息学部 · 部分教授与本部双聘</small></div></li>
+        </ul>
+      </li>
+
+    </ul>
+  </li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="note">
+  <h3>数据口径与更正说明（重要）</h3>
+  <b>① 全量口径：</b>计算机系 135 人来自系官网《教职工名录》（jzgml.htm，样式文件标注 2024-02 更新，与高性能所官网 29 人名单交叉验证一致）；叉院 33 名全职教师来自官网《人员队伍》页（2026-10 采集，与英文站一致）。名录之后新入职/离职者可能有出入。<br>
+  <b>② 编制更正：</b>按官方名录，<b>唐杰、李涓子（KEG）的编制在"计算机软件研究所"</b>而非智能技术与系统实验室；KEG 同时依托智能所（原国家重点实验室）体系和基础模型北京市重点实验室。紫色成员＝据软件所官网团队页补充（带 * 号者未见于系名录，应为名录更新后新入职/外聘）。<br>
+  <b>③ 叉院架构更正：</b>叉院官网现行架构为基础研究设"量子信息中心（CQI）＋人工智能基础研究中心"两大机构；旧称"理论计算机科学研究中心 / 机器智能中心"已不在官网架构中。量子信息中心 9 名师资为官网明确列出；其余 24 名教师官网未标注中心归属，图中按方向聚簇展示并统归"人工智能基础研究中心"。<br>
+  <b>④ 课题组分级：</b>课题组为"研究方向聚落"，非行政编制；一名教师只画在其主要方向，实际可能交叉（如武永卫既做系统也做大数据）。带 [?] 或无括号说明者表示研究方向未获可靠公开来源，欢迎指正。<br>
+  <b>⑤ 校内兼职（斜体）：</b>名录中标注"校内兼职"者共 8 人（段海新、王小云、王继龙、杨家海、李琦、王会、王之梁、张超），主业在网络研究院/高等研究院等单位，仅在网络所兼任。<br>
+  <b>⑥ 其他院系/校级机构</b>（软件学院、电子系、自动化系、网研院、深研院、AI研究院、AIR、信息国家研究中心）保持概览级，未逐人展开；人工智能学院为架构级（2024 新设，师资多与上述院系双聘，学院官网 collegeai.tsinghua.edu.cn）。<br>
+  <b>⑦ SAIL = TSAIL：</b>朱军组的官方英文名即 "Tsinghua SAIL Group (Statistical Artificial Intelligence &amp; Learning)"（官网 ml.cs.tsinghua.edu.cn），不是独立于 TSAIL 的另一个组。<br>
+  <b>⑧ 建制澄清：</b>清华大学没有"计算机学院"建制——计算机方向主体为计算机科学与技术系；软件学院、网络研究院、电子工程系、自动化系等为平行院系（同属信息大类）。<br>
+  <b>⑨ 2026-10 筛查修订：</b>按"只保留科研/技术组织"原则，移除计算机基础与实验教学部（16 人教学单位）、叉院教学品牌卡（姚班/智班/量信班）与叉院兼职客座卡（储枫/胡事民/郁昱/楼天城，系兼职身份而非组织，兼职信息见第⑤条口径）；政府批建平台与产业孵化卡保留（技术实体与孵化关系）。<br>
+  <b>⑩ 本次修订的事实来源：</b>人工智能学院（2024-04-27 成立、院长姚期智、学术委员会 6 院士、学科布局）据清华新闻网与学院官网；副院长朱军据公开资料，暂未见官方任命通稿；汪玉（电子系主任）、刘云浩（软件学院院长）、王建民（大数据系统软件国家工程研究中心执行主任）、黄高（自动化系长聘副教授、DenseNet 一作）、信息国家研究中心（2017-11 批准组建、现任主任戴琼海）均经 2026-10 检索核实。
+</div>
+
+<script>
+  var scale = 1;
+  function apply() {
+    var c = document.getElementById('canvas');
+    c.style.zoom = scale;
+    document.getElementById('pct').textContent = Math.round(scale * 100) + '%';
+  }
+  function zoom(f) { scale = Math.min(2, Math.max(0.2, scale * f)); apply(); }
+  function zoomReset() { scale = 1; apply(); }
+  function zoomFit() {
+    var c = document.getElementById('canvas');
+    var vw = document.documentElement.clientWidth - 24;
+    scale = Math.min(1, vw / c.scrollWidth);
+    apply();
+  }
+  window.addEventListener('load', zoomFit);   /* 默认打开即全图概览 */
+</script>
+</body>
+</html>
